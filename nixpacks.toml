@@ -1,0 +1,23 @@
+[phases.setup]
+nixPkgs = ["python39", "nodejs-18_x", "npm-9_x"]
+
+[phases.install]
+cmds = [
+    "pip install -r requirements.txt",
+    "cd frontend && npm install --legacy-peer-deps"
+]
+
+[phases.build]
+cmds = [
+    "cd frontend && npm run build",
+    "mkdir -p backend/static",
+    "cp -r frontend/build/* backend/static/"
+]
+
+[start]
+cmd = "python start.py"
+
+[variables]
+PYTHONPATH = "/app/backend:/app/ml-model"
+FLASK_ENV = "production"
+FORCE_SQLITE = "true"

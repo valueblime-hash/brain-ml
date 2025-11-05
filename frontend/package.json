@@ -36,7 +36,8 @@
     "eject": "react-scripts eject",
     "lint": "eslint src/**/*.{js,jsx}",
     "lint:fix": "eslint src/**/*.{js,jsx} --fix",
-    "format": "prettier --write src/**/*.{js,jsx,json,css,md}"
+    "format": "prettier --write src/**/*.{js,jsx,json,css,md}",
+    "railway-build": "npm run build"
   },
   "eslintConfig": {
     "extends": [
