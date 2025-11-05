@@ -28,7 +28,8 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   IconButton,
-  Chip
+  Chip,
+  InputAdornment
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -57,6 +58,7 @@ const ProfilePage = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Profile form validation
   const profileValidationSchema = Yup.object({
@@ -513,12 +515,22 @@ const ProfilePage = () => {
               id="confirmPassword"
               name="confirmPassword"
               label="Confirm New Password"
-              type="password"
+              type={showConfirmPassword ? 'text' : 'password'}
               value={passwordFormik.values.confirmPassword}
               onChange={passwordFormik.handleChange}
               onBlur={passwordFormik.handleBlur}
               error={passwordFormik.touched.confirmPassword && Boolean(passwordFormik.errors.confirmPassword)}
               helperText={passwordFormik.touched.confirmPassword && passwordFormik.errors.confirmPassword}
+              InputProps={{
+                endAdornment: (
+                  <IconButton
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    edge="end"
+                  >
+                    {showConfirmPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                  </IconButton>
+                )
+              }}
             />
           </Box>
         </DialogContent>

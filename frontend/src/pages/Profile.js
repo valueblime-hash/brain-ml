@@ -13,6 +13,8 @@ import {
   Divider,
   Alert,
   CircularProgress,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
 import {
   Person,
@@ -20,6 +22,8 @@ import {
   Save,
   Cancel,
   Lock,
+  Visibility,
+  VisibilityOff,
 } from "@mui/icons-material";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -43,6 +47,9 @@ const Profile = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
 
   const handleProfileChange = (event) => {
     const { name, value } = event.target;
@@ -72,6 +79,18 @@ const Profile = () => {
         [name]: "",
       }));
     }
+  };
+
+  const handleToggleCurrentPasswordVisibility = () => {
+    setShowCurrentPassword((prev) => !prev);
+  };
+
+  const handleToggleNewPasswordVisibility = () => {
+    setShowNewPassword((prev) => !prev);
+  };
+
+  const handleToggleConfirmNewPasswordVisibility = () => {
+    setShowConfirmNewPassword((prev) => !prev);
   };
 
   const validateProfile = () => {
@@ -361,11 +380,25 @@ const Profile = () => {
                     fullWidth
                     label="Current Password"
                     name="currentPassword"
-                    type="password"
+                    type={showCurrentPassword ? "text" : "password"}
                     value={passwordData.currentPassword}
                     onChange={handlePasswordChange}
                     error={!!errors.currentPassword}
                     helperText={errors.currentPassword}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle current password visibility"
+                            onClick={handleToggleCurrentPasswordVisibility}
+                            edge="end"
+                            size="small"
+                          >
+                            {showCurrentPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
                   />
                 </Grid>
 
@@ -374,11 +407,25 @@ const Profile = () => {
                     fullWidth
                     label="New Password"
                     name="newPassword"
-                    type="password"
+                    type={showNewPassword ? "text" : "password"}
                     value={passwordData.newPassword}
                     onChange={handlePasswordChange}
                     error={!!errors.newPassword}
                     helperText={errors.newPassword || "Minimum 6 characters"}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle new password visibility"
+                            onClick={handleToggleNewPasswordVisibility}
+                            edge="end"
+                            size="small"
+                          >
+                            {showNewPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
                   />
                 </Grid>
 
@@ -387,11 +434,25 @@ const Profile = () => {
                     fullWidth
                     label="Confirm New Password"
                     name="confirmPassword"
-                    type="password"
+                    type={showConfirmNewPassword ? "text" : "password"}
                     value={passwordData.confirmPassword}
                     onChange={handlePasswordChange}
                     error={!!errors.confirmPassword}
                     helperText={errors.confirmPassword}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle confirm new password visibility"
+                            onClick={handleToggleConfirmNewPasswordVisibility}
+                            edge="end"
+                            size="small"
+                          >
+                            {showConfirmNewPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
                   />
                 </Grid>
 

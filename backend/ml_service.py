@@ -34,6 +34,8 @@ class StrokeRiskPredictor:
         # Set default model path with Railway-friendly fallbacks
         if model_path is None:
             current_dir = Path(__file__).parent
+            logger.info(f"🔍 DEBUGGING: Current directory: {current_dir}")
+            logger.info(f"🔍 DEBUGGING: Working directory: {Path.cwd()}")
 
             # Try multiple possible model locations
             possible_paths = [
@@ -45,17 +47,22 @@ class StrokeRiskPredictor:
                 Path("/app/ml-model/models/stroke_prediction_model.pkl"),
                 # Fourth try: relative to working directory
                 Path("ml-model/models/stroke_prediction_model.pkl"),
+                # Fifth try: backend models from root
+                Path("/app/backend/models/stroke_prediction_model.pkl"),
             ]
 
             model_path = None
-            for path in possible_paths:
+            logger.info(f"🔍 DEBUGGING: Checking {len(possible_paths)} possible model paths:")
+            for i, path in enumerate(possible_paths, 1):
+                logger.info(f"🔍 DEBUGGING: Path {i}: {path} (exists: {path.exists()})")
                 if path.exists():
                     model_path = path
-                    logger.info(f"Found model at: {path}")
+                    logger.info(f"✅ DEBUGGING: Found model at: {path}")
                     break
 
             if model_path is None:
-                logger.warning("No model file found in any expected location")
+                logger.error("❌ DEBUGGING: No model file found in any expected location")
+                logger.error("🔍 DEBUGGING: This will trigger fallback model creation")
                 # Will trigger fallback model creation
                 model_path = possible_paths[0]  # Use first path as default
 
@@ -65,11 +72,16 @@ class StrokeRiskPredictor:
     def _load_model(self):
         """Load the trained ML model and preprocessing objects"""
         try:
+            logger.info(f"🔍 DEBUGGING: Attempting to load model from {self.model_path}")
+            logger.info(f"🔍 DEBUGGING: Model path exists: {self.model_path.exists()}")
+
             if self.model_path.exists():
-                logger.info(f"Loading model from {self.model_path}")
+                logger.info(f"✅ DEBUGGING: Loading model from {self.model_path}")
+                logger.info(f"🔍 DEBUGGING: File size: {self.model_path.stat().st_size} bytes")
 
                 # Load model artifacts
                 model_artifacts = joblib.load(self.model_path)
+                logger.info(f"🔍 DEBUGGING: Model artifacts keys: {list(model_artifacts.keys())}")
 
                 self.model = model_artifacts['model']
                 self.scaler = model_artifacts['scaler']
@@ -78,21 +90,24 @@ class StrokeRiskPredictor:
                 self.model_name = model_artifacts['model_name']
                 self.model_metrics = model_artifacts.get('model_metrics', {})
 
-                logger.info(f"✅ Model loaded successfully: {self.model_name}")
-                logger.info(f"📊 Model AUC Score: {self.model_metrics.get(self.model_name, {}).get('auc_score', 'N/A')}")
+                logger.info(f"✅ DEBUGGING: Model loaded successfully: {self.model_name}")
+                logger.info(f"🔍 DEBUGGING: Model type: {type(self.model)}")
+                logger.info(f"📊 DEBUGGING: Model AUC Score: {self.model_metrics.get(self.model_name, {}).get('auc_score', 'N/A')}")
 
             else:
-                logger.warning(f"Model file not found at {self.model_path}")
-                logger.warning("Creating a simple fallback model...")
+                logger.error(f"❌ DEBUGGING: Model file not found at {self.model_path}")
+                logger.error("🔍 DEBUGGING: Creating a simple fallback model...")
                 self._create_fallback_model()
 
         except Exception as e:
-            logger.error(f"Error loading model: {str(e)}")
-            logger.warning("Creating a simple fallback model...")
+            logger.error(f"❌ DEBUGGING: Error loading model: {str(e)}")
+            logger.error(f"🔍 DEBUGGING: Exception type: {type(e)}")
+            logger.error("🔍 DEBUGGING: Creating a simple fallback model...")
             self._create_fallback_model()
 
     def _create_fallback_model(self):
         """Create a simple fallback model when the trained model is not available"""
+        logger.warning("⚠️ DEBUGGING: Creating fallback model - this should NOT happen in production!")
         from sklearn.ensemble import RandomForestClassifier
         from sklearn.preprocessing import StandardScaler, LabelEncoder
 
@@ -101,6 +116,7 @@ class StrokeRiskPredictor:
         self.scaler = StandardScaler()
         self.model_name = "Fallback Random Forest"
         self.model_version = "1.0.0-fallback"
+        logger.warning(f"⚠️ DEBUGGING: Fallback model created: {self.model_name} {self.model_version}")
 
         # Initialize label encoders with expected categories
         self.label_encoders = {

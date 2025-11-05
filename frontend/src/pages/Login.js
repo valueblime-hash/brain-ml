@@ -10,8 +10,14 @@ import {
   Divider,
   Link,
   CircularProgress,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
-import { Login as LoginIcon } from "@mui/icons-material";
+import { 
+  Login as LoginIcon,
+  Visibility,
+  VisibilityOff,
+} from "@mui/icons-material";
 import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -26,6 +32,7 @@ const Login = () => {
   });
   const [errors, setErrors] = useState({});
   const [showAlert, setShowAlert] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const from = location.state?.from?.pathname || "/dashboard";
 
@@ -88,6 +95,10 @@ const Login = () => {
     setErrors({
       general: "Google login will be available in a future update!",
     });
+  };
+
+  const handleTogglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
   };
 
   return (
@@ -153,7 +164,7 @@ const Login = () => {
               fullWidth
               label="Password"
               name="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={formData.password}
               onChange={handleInputChange}
               error={!!errors.password}
@@ -161,6 +172,20 @@ const Login = () => {
               margin="normal"
               required
               autoComplete="current-password"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleTogglePasswordVisibility}
+                      edge="end"
+                      size="small"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
 
             <Button

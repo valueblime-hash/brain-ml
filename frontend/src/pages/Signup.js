@@ -11,8 +11,14 @@ import {
   CircularProgress,
   FormControlLabel,
   Checkbox,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
-import { PersonAdd } from "@mui/icons-material";
+import { 
+  PersonAdd,
+  Visibility,
+  VisibilityOff,
+} from "@mui/icons-material";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -29,6 +35,8 @@ const Signup = () => {
   });
   const [errors, setErrors] = useState({});
   const [showAlert, setShowAlert] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleInputChange = (event) => {
     const { name, value, type, checked } = event.target;
@@ -107,6 +115,14 @@ const Signup = () => {
     }
   };
 
+  const handleTogglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
+  };
+
+  const handleToggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword((prev) => !prev);
+  };
+
   return (
     <Container maxWidth="sm">
       <Box
@@ -183,7 +199,7 @@ const Signup = () => {
               fullWidth
               label="Password"
               name="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={formData.password}
               onChange={handleInputChange}
               error={!!errors.password}
@@ -191,13 +207,27 @@ const Signup = () => {
               margin="normal"
               required
               autoComplete="new-password"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleTogglePasswordVisibility}
+                      edge="end"
+                      size="small"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
 
             <TextField
               fullWidth
               label="Confirm Password"
               name="confirmPassword"
-              type="password"
+              type={showConfirmPassword ? "text" : "password"}
               value={formData.confirmPassword}
               onChange={handleInputChange}
               error={!!errors.confirmPassword}
@@ -205,6 +235,20 @@ const Signup = () => {
               margin="normal"
               required
               autoComplete="new-password"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle confirm password visibility"
+                      onClick={handleToggleConfirmPasswordVisibility}
+                      edge="end"
+                      size="small"
+                    >
+                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
 
             <FormControlLabel

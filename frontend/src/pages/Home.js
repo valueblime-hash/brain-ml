@@ -102,13 +102,7 @@ const Home = () => {
       >
         <Container maxWidth="lg">
           <Box sx={{ textAlign: "center", mb: 6 }}>
-            <Chip
-              label="🎓 College Project - Machine Learning"
-              color="primary"
-              variant="outlined"
-              sx={{ mb: 3, fontSize: "1rem", py: 1 }}
-            />
-
+      
             <Typography
               variant="h2"
               component="h1"
@@ -123,18 +117,7 @@ const Home = () => {
               🧠 Brain Stroke Risk Prediction
             </Typography>
 
-            <Typography
-              variant="h4"
-              component="h2"
-              color="primary"
-              sx={{
-                fontWeight: "600",
-                mb: 2,
-                fontSize: { xs: "1.5rem", md: "2rem" },
-              }}
-            >
-              AI-Powered Healthcare Solution
-            </Typography>
+           
 
             <Typography
               variant="h6"
@@ -649,51 +632,7 @@ const Home = () => {
       </Box>
 
       {/* Academic Notice */}
-      <Box sx={{ bgcolor: "info.light", py: 4 }}>
-        <Container maxWidth="lg">
-          <Paper
-            sx={{
-              p: 4,
-              bgcolor: "transparent",
-              boxShadow: "none",
-              border: "2px solid",
-              borderColor: "info.main",
-              borderRadius: 2,
-            }}
-          >
-            <Typography
-              variant="h5"
-              color="info.dark"
-              fontWeight="bold"
-              gutterBottom
-              textAlign="center"
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 1,
-              }}
-            >
-              🎓 Academic Project Notice
-            </Typography>
-            <Typography
-              variant="body1"
-              color="info.dark"
-              textAlign="center"
-              sx={{ fontSize: "1.1rem", lineHeight: 1.6 }}
-            >
-              This is a college project developed for educational purposes to
-              demonstrate machine learning applications in healthcare. The
-              system showcases modern AI/ML engineering practices, full-stack
-              development, and data science methodologies.
-              <strong>
-                {" "}
-                Not intended for actual medical diagnosis or clinical use.
-              </strong>
-            </Typography>
-          </Paper>
-        </Container>
-      </Box>
+     
     </Box>
   );
 };
