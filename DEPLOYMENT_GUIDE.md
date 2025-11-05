@@ -1,360 +1,205 @@
-# 🚀 Railway Deployment Guide - Brain Stroke Prediction System
+# 🚀 Railway Deployment Guide - Separate Services
 
-This guide will walk you through deploying your Brain Stroke Risk Prediction System to Railway with SQLite database.
+## Overview
 
-## 📋 Prerequisites
+Railway requires **separate services** for Python backend and Node.js frontend. This guide shows you how to deploy both services and connect them properly.
 
-Before deploying, ensure you have:
-- ✅ GitHub account with your project repository
-- ✅ Railway account (free tier available)
-- ✅ All code committed and pushed to GitHub
+## 🏗️ **Architecture**
 
-## 💤 Railway Sleep/Shutdown Policy
-
-**Important:** Railway free tier has the following limitations:
-- **Sleep after inactivity**: Apps sleep after 30 minutes of no requests
-- **Monthly usage limit**: 500 hours per month on free tier
-- **Auto-wake**: Apps automatically wake up when accessed
-- **Data persistence**: SQLite data survives sleep cycles but NOT redeployments
-
-For college project demonstrations, this is perfect since:
-- ✅ App wakes up instantly when you access it
-- ✅ Great for presentations and demos
-- ✅ Zero cost for typical usage patterns
-- ✅ Data persists during sleep periods
-
-## 🎯 Quick Deployment (5 Minutes)
-
-### Step 1: Create Railway Account
-1. Go to [Railway.app](https://railway.app)
-2. Sign up with your GitHub account
-3. Authorize Railway to access your repositories
-
-### Step 2: Deploy Your Project
-1. Click **"New Project"** in Railway dashboard
-2. Select **"Deploy from GitHub repo"**
-3. Choose your `brain-stroke-prediction` repository
-4. Railway will automatically detect your project
-
-### Step 3: Configure SQLite (No Database Setup Needed!)
-1. Your app is already configured to use SQLite automatically
-2. No additional database service required
-3. Demo data will be created automatically on first run
-4. Perfect for college projects and demonstrations
-
-### Step 4: Configure Environment Variables
-In your Railway project settings, add these environment variables:
-
-```bash
-FLASK_ENV=production
-SECRET_KEY=your-super-secure-secret-key-change-this
-JWT_SECRET_KEY=your-jwt-secret-key-change-this
-PYTHONPATH=/app/backend:/app/ml-model
-FORCE_SQLITE=true
+```
+Railway Project: brain-ml
+├── 🐍 Backend Service (Python/Flask)
+│   ├── URL: https://backend-production-xxxx.up.railway.app
+│   └── Serves: API endpoints only
+└── ⚛️ Frontend Service (Node.js/React)
+    ├── URL: https://frontend-production-xxxx.up.railway.app
+    └── Serves: React app + static files
 ```
 
-### Step 5: Deploy & Test
-1. Railway automatically deploys your code
-2. Wait for deployment to complete (2-3 minutes)
-3. Test your deployment at the generated Railway URL
+## 📋 **Step-by-Step Deployment**
 
-## 🔧 Detailed Setup Instructions
+### **Step 1: Deploy Backend Service**
 
-### Database Configuration
+1. **Go to Railway Dashboard**
+   - Visit [railway.app](https://railway.app)
+   - Click "New Project"
+   - Select "Deploy from GitHub repo"
+   - Choose `valueblime-hash/brain-ml`
 
-Your app uses SQLite automatically with these benefits:
+2. **Configure Backend Service**
+   - **Root Directory**: `/backend`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `python app.py`
 
-1. **No Setup Required**: SQLite file is created automatically
-2. **Demo Data**: Sample data is seeded on first run
-3. **Fast Performance**: Perfect for demonstrations
-4. **Zero Cost**: No database service charges
-5. **Instant Login**: Use demo@strokeprediction.com / demo123
+3. **Set Environment Variables**
+   ```
+   FLASK_ENV=production
+   PYTHONPATH=/app/backend:/app/ml-model
+   FORCE_SQLITE=true
+   SECRET_KEY=your-secret-key-here
+   PORT=5000
+   ```
 
-### Environment Variables Explained
+4. **Deploy Backend**
+   - Railway will build and deploy the Flask API
+   - Note the backend URL: `https://backend-production-xxxx.up.railway.app`
 
-| Variable | Description | Required | Example |
-|----------|-------------|----------|---------|
-| `FLASK_ENV` | Flask environment | Yes | `production` |
-| `SECRET_KEY` | Flask secret key | Yes | `your-secret-key-here` |
-| `JWT_SECRET_KEY` | JWT signing key | Yes | `your-jwt-secret-here` |
-| `PYTHONPATH` | Python module search path | Yes | `/app/backend:/app/ml-model` |
-| `FORCE_SQLITE` | Force SQLite usage | Yes | `true` |
-| `PORT` | Application port | Auto-set | `5000` |
+### **Step 2: Deploy Frontend Service**
 
-### Custom Domain (Optional)
+1. **Add New Service to Same Project**
+   - In Railway dashboard, click "Add Service"
+   - Select "GitHub Repo" again
+   - Choose the same `valueblime-hash/brain-ml` repository
 
-To use a custom domain:
+2. **Configure Frontend Service**
+   - **Root Directory**: `/frontend`
+   - **Build Command**: `npm install && npm run build`
+   - **Start Command**: `npm start`
 
-1. In Railway project settings, go to **"Domains"**
-2. Click **"Add Domain"**
-3. Enter your domain name
-4. Configure your DNS provider to point to Railway
+3. **Set Environment Variables**
+   ```
+   REACT_APP_API_URL=https://backend-production-xxxx.up.railway.app
+   NODE_ENV=production
+   GENERATE_SOURCEMAP=false
+   ```
 
-## 🌐 Frontend Deployment Options
+4. **Deploy Frontend**
+   - Railway will build React app and serve it
+   - Note the frontend URL: `https://frontend-production-xxxx.up.railway.app`
 
-### Option 1: Vercel (Recommended)
-```bash
-# Install Vercel CLI
-npm install -g vercel
+## 🔧 **Configuration Files Needed**
 
-# Deploy frontend
-cd frontend
-vercel --prod
-```
+### **Backend Configuration**
 
-### Option 2: Netlify
-1. Connect your GitHub repository to Netlify
-2. Set build command: `npm run build`
-3. Set publish directory: `build`
-4. Deploy automatically on git push
-
-### Option 3: Railway (Same Platform)
-You can also deploy your frontend on Railway:
-1. Create a new Railway service for frontend
-2. Configure build command: `cd frontend && npm run build`
-3. Configure start command: `cd frontend && npm start`
-
-## 🔄 Environment Variables for Frontend
-
-Update your frontend's API endpoint:
-
-```javascript
-// In your React app, update API base URL
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://your-railway-app-url.railway.app'
-  : 'http://localhost:5000';
-```
-
-Add to your frontend `.env` file:
-```bash
-REACT_APP_API_URL=https://your-railway-app-url.railway.app
-```
-
-## 🔍 Testing Your Deployment
-
-### 1. Health Check
-```bash
-curl https://your-app-url.railway.app/
-```
-
-Expected response:
+Create `backend/railway.json`:
 ```json
 {
-  "status": "healthy",
-  "service": "Brain Stroke Risk Prediction API",
-  "version": "2.0.0",
-  "database": "connected",
-  "ml_service": "available",
-  "environment": "production"
-}
-```
-
-### 2. API Information
-```bash
-curl https://your-app-url.railway.app/api/info
-```
-
-### 3. User Registration Test
-```bash
-curl -X POST https://your-app-url.railway.app/api/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Test User",
-    "email": "test@example.com",
-    "password": "testpass123"
-  }'
-```
-
-### 4. Database Check
-Your app automatically creates demo data on first run:
-- **Email**: `demo@strokeprediction.com`
-- **Password**: `demo123`
-- **Sample Predictions**: 2-3 example predictions pre-loaded
-- **Instant Demo**: Perfect for presentations
-
-## 🐛 Troubleshooting
-
-### Common Issues & Solutions
-
-#### 1. Build Fails
-**Error**: Python dependencies not found
-**Solution**: Ensure `requirements.txt` is in the backend folder
-```bash
-# Check if requirements.txt exists
-ls backend/requirements.txt
-
-# If missing, create it
-cd backend
-pip freeze > requirements.txt
-```
-
-#### 2. SQLite Database Error
-**Error**: `database is locked` or `no such table`
-**Solution**: Check file permissions and initialization
-```bash
-# SQLite file is created automatically on first run
-# Demo data is seeded during startup
-```
-
-#### 3. Module Import Error
-**Error**: `ModuleNotFoundError: No module named 'ml_service'`
-**Solution**: Add PYTHONPATH environment variable
-```bash
-PYTHONPATH=/app/backend:/app/ml-model
-```
-
-#### 4. Port Binding Error
-**Error**: `Port already in use`
-**Solution**: Use Railway's PORT environment variable
-```python
-# In your app.py
-port = int(os.environ.get('PORT', 5000))
-app.run(host='0.0.0.0', port=port)
-```
-
-### Deployment Logs
-
-To view deployment logs:
-1. Go to your Railway project dashboard
-2. Click on your service
-3. Go to **"Deployments"** tab
-4. Click on latest deployment to view logs
-
-### Database Management
-
-SQLite database management:
-1. **Local Development**: Use SQLite browser or CLI tools
-2. **Production**: Database resets on redeployment (expected behavior)
-3. **Demo Data**: Automatically recreated on each deployment
-4. **Backup**: Not needed for demo purposes
-
-## 📊 Database Initialization
-
-Your app automatically initializes the database on first run. To manually initialize:
-
-```python
-# SSH into Railway container (if needed)
-python backend/init_db.py init
-python backend/init_db.py seed
-```
-
-## 🔒 Security Considerations
-
-### Production Security Checklist
-
-- ✅ **Environment Variables**: Never commit secrets to git
-- ✅ **HTTPS**: Railway provides SSL certificates automatically  
-- ✅ **Database**: SQLite is file-based and secure
-- ✅ **CORS**: Configure allowed origins for your frontend
-- ✅ **Rate Limiting**: Consider adding rate limiting for production
-- ⚠️ **Data Persistence**: Remember data resets on redeployment
-
-### Security Environment Variables
-```bash
-# Strong secret keys (generate with: python -c "import secrets; print(secrets.token_urlsafe(32))")
-SECRET_KEY=your-randomly-generated-secret-key
-JWT_SECRET_KEY=your-randomly-generated-jwt-key
-
-# CORS configuration
-CORS_ORIGINS=https://your-frontend-domain.com,https://your-app.vercel.app
-```
-
-## 💰 Cost Estimates
-
-### Railway Pricing (as of 2024)
-- **Free Tier**: 500 hours per month + $5 credit
-- **SQLite**: $0 (no database service charges)
-- **Perfect for College Projects**: Completely free for typical usage
-- **Sleep Mode**: App sleeps after 30min inactivity (free tier)
-
-### Cost Optimization
-- ✅ **Zero Database Cost**: SQLite is free
-- ✅ **Efficient Sleep**: Only uses hours when active
-- ✅ **College Friendly**: Perfect for presentations and demos
-- ✅ **Auto Wake**: Instant wake-up when accessed
-
-## 📈 Monitoring & Maintenance
-
-### Built-in Monitoring
-Railway provides:
-- **Deployment History**: Track all deployments
-- **Metrics**: CPU, memory, and network usage
-- **Logs**: Real-time application logs
-- **Health Checks**: Automatic uptime monitoring
-
-### Custom Health Checks
-Your app includes health check endpoints:
-- `/` - General health status
-- `/api/info` - API and database status
-
-## 🚀 Advanced Configuration
-
-### Custom Build Commands
-Create `railway.json` for advanced configuration:
-```json
-{
-  "build": {
-    "builder": "NIXPACKS"
-  },
+  "$schema": "https://railway.app/railway.schema.json",
   "deploy": {
-    "startCommand": "cd backend && python app.py",
+    "startCommand": "python app.py",
     "healthcheckPath": "/",
-    "healthcheckTimeout": 300
+    "healthcheckTimeout": 100
   }
 }
 ```
 
-### Database Backups
-Railway Pro includes automatic database backups:
-- Daily automatic backups
-- Point-in-time recovery
-- Manual backup creation
+### **Frontend Configuration**
 
-## 🎯 Going Live Checklist
+Create `frontend/railway.json`:
+```json
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "deploy": {
+    "startCommand": "npm start",
+    "healthcheckPath": "/",
+    "healthcheckTimeout": 100
+  }
+}
+```
 
-Before making your app public:
+## 🌐 **Alternative: Backend-Only Deployment with Static Frontend**
 
-- [ ] Test all API endpoints
-- [ ] Verify SQLite database creation
-- [ ] Test user registration/login
-- [ ] Test ML prediction functionality
-- [ ] Check frontend-backend integration
-- [ ] Verify environment variables
-- [ ] Test with demo credentials (demo@strokeprediction.com/demo123)
-- [ ] Test app wake-up from sleep
-- [ ] Verify demo data creation
-- [ ] Test on mobile devices
+If you prefer a single service, you can serve the React build from Flask:
 
-## 📞 Support Resources
+### **Option A: Flask Serves Everything**
 
-### Railway Support
-- **Documentation**: [docs.railway.app](https://docs.railway.app)
-- **Discord**: Railway Community Discord
-- **GitHub**: Issues and discussions
+1. **Build Frontend Locally**
+   ```bash
+   cd frontend
+   npm install
+   npm run build
+   ```
 
-### Project Support
-- **GitHub Issues**: Report bugs in your repository
-- **Documentation**: This deployment guide
-- **Local Testing**: Always test locally before deploying
+2. **Copy Build to Backend**
+   ```bash
+   cp -r frontend/build/* backend/static/
+   ```
+
+3. **Update Flask App** to serve static files:
+   ```python
+   from flask import Flask, send_from_directory
+   
+   app = Flask(__name__, static_folder='static', static_url_path='')
+   
+   @app.route('/')
+   def serve_frontend():
+       return send_from_directory(app.static_folder, 'index.html')
+   
+   @app.route('/<path:path>')
+   def serve_static(path):
+       return send_from_directory(app.static_folder, path)
+   ```
+
+4. **Deploy Only Backend**
+   - Root Directory: `/backend`
+   - Railway serves both API and frontend from Flask
+
+## 📊 **Recommended Approach: Separate Services**
+
+### **Pros:**
+- ✅ Better separation of concerns
+- ✅ Independent scaling
+- ✅ Easier debugging
+- ✅ Better performance
+
+### **Cons:**
+- ❌ Two separate URLs
+- ❌ CORS configuration needed
+- ❌ Slightly more complex setup
+
+## 🔒 **CORS Configuration**
+
+For separate services, update your Flask backend:
+
+```python
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app, origins=['https://frontend-production-xxxx.up.railway.app'])
+```
+
+## 🧪 **Testing Your Deployment**
+
+### **Backend Testing**
+```bash
+curl https://backend-production-xxxx.up.railway.app/
+curl https://backend-production-xxxx.up.railway.app/api/info
+```
+
+### **Frontend Testing**
+- Visit: `https://frontend-production-xxxx.up.railway.app`
+- Test login with demo credentials
+- Verify API calls work
+
+## 🚨 **Common Issues & Solutions**
+
+### **CORS Errors**
+- Add frontend URL to CORS origins in backend
+- Verify REACT_APP_API_URL points to correct backend
+
+### **Build Failures**
+- Check Node.js version compatibility
+- Verify all dependencies in package.json
+- Check Railway build logs
+
+### **API Connection Issues**
+- Verify backend is deployed and healthy
+- Check environment variables
+- Test API endpoints directly
+
+## 📱 **Demo Credentials**
+
+Once deployed, test with:
+- **Email**: `demo@strokeprediction.com`
+- **Password**: `demo123`
+
+## 🎯 **Final URLs**
+
+After successful deployment:
+- **Main App**: `https://frontend-production-xxxx.up.railway.app`
+- **API**: `https://backend-production-xxxx.up.railway.app`
+- **Health Check**: `https://backend-production-xxxx.up.railway.app/`
 
 ---
 
-## 🎉 Congratulations!
-
-Your Brain Stroke Risk Prediction System is now deployed to Railway with PostgreSQL! 
-
-**Your Live URLs:**
-- **API**: `https://your-app-name.railway.app`
-- **Health Check**: `https://your-app-name.railway.app/`
-- **API Docs**: `https://your-app-name.railway.app/api/info`
-
-**Demo Credentials (Auto-created):**
-- **Email**: `demo@strokeprediction.com`
-- **Password**: `demo123`
-- **Features**: Pre-loaded with sample predictions for instant demo
-
-**Sleep Behavior:**
-- **Sleeps**: After 30 minutes of inactivity
-- **Wakes**: Instantly when you access the URL
-- **Data**: Survives sleep, resets on redeployment
-- **Perfect**: For college presentations! 🎓✨
+**🎉 This approach ensures reliable deployment on Railway with proper separation of services!**
