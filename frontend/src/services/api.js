@@ -2,7 +2,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 
 // API Configuration
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://web-production-52e4b.up.railway.app';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://web-production-2fb7.up.railway.app';
 
 // Create axios instance with default configuration
 const api = axios.create({

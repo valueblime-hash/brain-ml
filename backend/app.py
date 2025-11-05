@@ -50,10 +50,11 @@ def create_app(config_name=None):
     db.init_app(app)
     CORS(app,
          origins=[
+             'https://brain-ml-production.up.railway.app',  # Your actual frontend URL
              'https://web-production-4ea93.up.railway.app', 
              'http://localhost:3000',
-             'https://*.up.railway.app',  # Allow all Railway frontend deployments
-             'https://frontend-production-*.up.railway.app'  # Specific pattern for frontend service
+             'https://*.up.railway.app',  # Allow all Railway deployments
+             '*'  # Allow all origins for development (remove in production if needed)
          ],
          methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
          allow_headers=['Content-Type', 'Authorization', 'Accept'],
@@ -131,7 +132,22 @@ def register_routes(app):
             'timestamp': datetime.utcnow().isoformat(),
             'database': 'connected' if db.engine else 'disconnected',
             'ml_service': 'available' if ML_SERVICE_AVAILABLE else 'unavailable',
-            'environment': os.environ.get('FLASK_ENV', 'development')
+            'environment': os.environ.get('FLASK_ENV', 'development'),
+            'cors_configured': True,
+            'allowed_origins': [
+                'https://brain-ml-production.up.railway.app',
+                'http://localhost:3000'
+            ]
+        })
+
+    @app.route('/api/test-cors', methods=['GET', 'POST', 'OPTIONS'])
+    def test_cors():
+        """Test CORS configuration"""
+        return jsonify({
+            'message': 'CORS is working!',
+            'method': request.method,
+            'origin': request.headers.get('Origin'),
+            'timestamp': datetime.utcnow().isoformat()
         })
 
     @app.route('/api/info', methods=['GET'])

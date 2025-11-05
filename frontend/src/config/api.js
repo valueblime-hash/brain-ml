@@ -3,7 +3,7 @@
 
 const API_CONFIG = {
   // Base URL for the backend API
-  BASE_URL: process.env.REACT_APP_API_URL || 'https://web-production-52e4b.up.railway.app',
+  BASE_URL: process.env.REACT_APP_API_URL || 'https://web-production-2fb7.up.railway.app',
 
   // API endpoints
   ENDPOINTS: {
