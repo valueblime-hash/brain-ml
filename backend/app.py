@@ -49,16 +49,11 @@ def create_app(config_name=None):
     # Initialize extensions
     db.init_app(app)
     CORS(app,
-         origins=[
-             'https://brain-ml-production.up.railway.app',  # Your actual frontend URL
-             'https://web-production-4ea93.up.railway.app', 
-             'http://localhost:3000',
-             'https://*.up.railway.app',  # Allow all Railway deployments
-             '*'  # Allow all origins for development (remove in production if needed)
-         ],
+         resources={r"/api/*": {"origins": "*"}},
          methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
          allow_headers=['Content-Type', 'Authorization', 'Accept'],
-         supports_credentials=False)
+         supports_credentials=False,
+         expose_headers=['Content-Type', 'Authorization'])
 
     # Initialize database migration
     migrate = Migrate(app, db)
@@ -106,6 +101,7 @@ def register_error_handlers(app):
             'status_code': 404,
             'available_endpoints': [
                 '/', '/api/info', '/api/auth/signup', '/api/auth/login',
+                '/api/auth/validate', '/api/auth/profile', '/api/auth/change-password',
                 '/api/predict', '/api/history', '/api/statistics'
             ]
         }), 404
@@ -167,6 +163,9 @@ def register_routes(app):
                     '/api/info': 'API information',
                     '/api/auth/signup': 'User registration',
                     '/api/auth/login': 'User authentication',
+                    '/api/auth/validate': 'Token validation',
+                    '/api/auth/profile': 'Get/Update user profile',
+                    '/api/auth/change-password': 'Change password',
                     '/api/predict': 'Stroke risk prediction',
                     '/api/history': 'Get prediction history',
                     '/api/statistics': 'Get user statistics',
@@ -307,6 +306,116 @@ def register_routes(app):
         except Exception as e:
             logger.error(f"Token validation error: {str(e)}")
             return jsonify({'valid': False, 'error': 'Token validation failed'}), 401
+
+    @app.route('/api/auth/profile', methods=['GET', 'PUT', 'OPTIONS'])
+    def profile():
+        """Get or update user profile"""
+        if request.method == 'OPTIONS':
+            return '', 204
+            
+        try:
+            current_user = get_current_user()
+            if not current_user:
+                return jsonify({'error': 'Authentication required'}), 401
+
+            if request.method == 'GET':
+                return jsonify({
+                    'status': 'success',
+                    'user': current_user.to_dict()
+                })
+
+            elif request.method == 'PUT':
+                if not request.is_json:
+                    return jsonify({'error': 'Request must be JSON'}), 400
+
+                data = request.get_json()
+                
+                # Update allowed fields
+                if 'name' in data and data['name']:
+                    current_user.name = data['name'].strip()
+                
+                if 'email' in data and data['email']:
+                    # Check if email is already taken by another user
+                    existing_user = User.find_by_email(data['email'])
+                    if existing_user and existing_user.id != current_user.id:
+                        return jsonify({'error': 'Email already in use'}), 400
+                    
+                    # Validate email format
+                    import re
+                    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+                    if not re.match(email_pattern, data['email']):
+                        return jsonify({'error': 'Invalid email format'}), 400
+                    
+                    current_user.email = data['email'].strip()
+
+                db.session.commit()
+                logger.info(f"Profile updated for user: {current_user.email}")
+
+                return jsonify({
+                    'status': 'success',
+                    'message': 'Profile updated successfully',
+                    'user': current_user.to_dict()
+                })
+
+        except Exception as e:
+            logger.error(f"Profile error: {str(e)}")
+            db.session.rollback()
+            return jsonify({
+                'error': 'Failed to update profile',
+                'message': str(e)
+            }), 500
+
+    @app.route('/api/auth/change-password', methods=['POST', 'OPTIONS'])
+    def change_password():
+        """Change user password"""
+        if request.method == 'OPTIONS':
+            return '', 204
+            
+        try:
+            current_user = get_current_user()
+            if not current_user:
+                return jsonify({'error': 'Authentication required'}), 401
+
+            if not request.is_json:
+                return jsonify({'error': 'Request must be JSON'}), 400
+
+            data = request.get_json()
+
+            # Validate required fields
+            if not data.get('currentPassword') or not data.get('newPassword'):
+                return jsonify({'error': 'Current password and new password are required'}), 400
+
+            # Verify current password
+            if not current_user.check_password(data['currentPassword']):
+                return jsonify({'error': 'Current password is incorrect'}), 401
+
+            # Validate new password
+            new_password = data['newPassword']
+            if len(new_password) < 6:
+                return jsonify({'error': 'New password must be at least 6 characters'}), 400
+
+            # Update password
+            hashed_password = bcrypt.hashpw(
+                new_password.encode('utf-8'),
+                bcrypt.gensalt()
+            )
+            current_user.password_hash = hashed_password.decode('utf-8')
+            db.session.commit()
+
+            logger.info(f"Password changed for user: {current_user.email}")
+
+            return jsonify({
+                'status': 'success',
+                'message': 'Password changed successfully'
+            })
+
+        except Exception as e:
+            logger.error(f"Change password error: {str(e)}")
+            db.session.rollback()
+            return jsonify({
+                'error': 'Failed to change password',
+                'message': str(e)
+            }), 500
 
     # Helper function to get current user
     def get_current_user():
@@ -559,6 +668,8 @@ if __name__ == '__main__':
     print("  POST   /api/auth/signup  - User registration")
     print("  POST   /api/auth/login   - User login")
     print("  GET    /api/auth/validate - Token validation")
+    print("  GET/PUT /api/auth/profile - Get/Update user profile")
+    print("  POST   /api/auth/change-password - Change password")
     print("  POST   /api/predict      - Stroke risk prediction")
     print("  GET    /api/history      - Get prediction history")
     print("  GET    /api/statistics   - Get user statistics")
