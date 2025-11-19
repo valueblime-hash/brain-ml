@@ -347,6 +347,23 @@ def register_routes(app):
                         return jsonify({'error': 'Invalid email format'}), 400
                     
                     current_user.email = data['email'].strip()
+                
+                # Update phone number
+                if 'phone' in data:
+                    current_user.phone = data['phone'].strip() if data['phone'] else None
+                
+                # Update date of birth
+                if 'dateOfBirth' in data and data['dateOfBirth']:
+                    try:
+                        from datetime import datetime as dt
+                        # Parse date string (format: YYYY-MM-DD)
+                        dob = dt.strptime(data['dateOfBirth'], '%Y-%m-%d').date()
+                        current_user.date_of_birth = dob
+                    except ValueError:
+                        return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD'}), 400
+                elif 'dateOfBirth' in data and not data['dateOfBirth']:
+                    # Allow clearing the date
+                    current_user.date_of_birth = None
 
                 db.session.commit()
                 logger.info(f"Profile updated for user: {current_user.email}")
@@ -387,19 +404,15 @@ def register_routes(app):
 
             # Verify current password
             if not current_user.check_password(data['currentPassword']):
-                return jsonify({'error': 'Current password is incorrect'}), 401
+                return jsonify({'error': 'Current password is incorrect', 'message': 'Current password is incorrect'}), 400
 
             # Validate new password
             new_password = data['newPassword']
             if len(new_password) < 6:
                 return jsonify({'error': 'New password must be at least 6 characters'}), 400
 
-            # Update password
-            hashed_password = bcrypt.hashpw(
-                new_password.encode('utf-8'),
-                bcrypt.gensalt()
-            )
-            current_user.password_hash = hashed_password.decode('utf-8')
+            # Update password using the User model's method
+            current_user.set_password(new_password)
             db.session.commit()
 
             logger.info(f"Password changed for user: {current_user.email}")

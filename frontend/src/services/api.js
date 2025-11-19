@@ -33,15 +33,27 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      // Only redirect to login if it's an authentication failure (not wrong password in change-password)
+      const url = error.config?.url || '';
+      const isChangePassword = url.includes('/change-password');
+      
+      // Don't redirect if it's a change-password error (wrong current password)
+      if (!isChangePassword) {
+        // Token expired or invalid
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
     }
 
-    // Show error toast
-    const errorMessage = error.response?.data?.message || 'An error occurred';
-    toast.error(errorMessage);
+    // Show error toast (but not for change-password, it's handled in the component)
+    const url = error.config?.url || '';
+    const isChangePassword = url.includes('/change-password');
+    
+    if (!isChangePassword) {
+      const errorMessage = error.response?.data?.message || 'An error occurred';
+      toast.error(errorMessage);
+    }
 
     return Promise.reject(error);
   }

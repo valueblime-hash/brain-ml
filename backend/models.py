@@ -14,6 +14,8 @@ class User(db.Model):
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
+    phone = db.Column(db.String(20), nullable=True)
+    date_of_birth = db.Column(db.Date, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
@@ -46,7 +48,10 @@ class User(db.Model):
             'id': self.id,
             'name': self.name,
             'email': self.email,
+            'phone': self.phone,
+            'dateOfBirth': self.date_of_birth.isoformat() if self.date_of_birth else None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
+            'createdAt': self.created_at.isoformat() if self.created_at else None,
             'last_login': self.last_login.isoformat() if self.last_login else None,
             'is_active': self.is_active,
             'total_predictions': self.predictions.count()
